@@ -1,0 +1,53 @@
+name: Build Animex APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [animex-build]
+    paths:
+      - 'animex-payload/**'
+      - '.github/workflows/animex-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: animex-build
+
+      - name: Reconstruct project
+        run: |
+          cat animex-payload/part*.b64 | base64 --decode > /tmp/animex.zip
+          unzip -q /tmp/animex.zip -d "$GITHUB_WORKSPACE/work"
+          test -f "$GITHUB_WORKSPACE/work/AnimeX/settings.gradle"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build signed release APK
+        working-directory: work/AnimeX
+        run: gradle --no-daemon clean assembleRelease
+
+      - name: Verify APK signatures
+        run: |
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          APKSIGNER=$(find "$SDK_ROOT/build-tools" -name apksigner -type f | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs work/AnimeX/app/build/outputs/apk/release/app-release.apk
+
+      - name: Rename output
+        run: cp work/AnimeX/app/build/outputs/apk/release/app-release.apk Animex.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Animex-APK
+          path: Animex.apk
+          if-no-files-found: error
