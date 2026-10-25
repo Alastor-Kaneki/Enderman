@@ -68,7 +68,7 @@ class MainActivity:Activity() {
   try {contentResolver.openOutputStream(uri)?.use {out->ZipOutputStream(out).use {zip->val report=JSONArray();val used=mutableSetOf<String>()
    for((i,w) in batch.withIndex()){try {val bytes=fetch(w.url);val folder=if(exportMode=="Categories") safe(w.category)+"/" else "";var entry=folder+safe(w.name);var suffix=2;while(!used.add(entry)){entry=folder+"${suffix++}_"+safe(w.name)};zip.putNextEntry(ZipEntry(entry));zip.write(bytes);zip.closeEntry();ok++;report.put(JSONObject().put("filename",entry).put("url",w.url).put("category",w.category).put("status","downloaded"))}catch(e:Exception){failed++;report.put(JSONObject().put("url",w.url).put("status","failed").put("error",e.message))};if(i%10==0)runOnUiThread {status.text="Exporting ${i+1}/${batch.size}…"};Thread.sleep(500)}
    zip.putNextEntry(ZipEntry("manifest.json"));zip.write(report.toString(2).toByteArray());zip.closeEntry()
-  }}};runOnUiThread {status.text="ZIP complete: $ok downloaded, $failed failed"}
+  }};runOnUiThread {status.text="ZIP complete: $ok downloaded, $failed failed"}
   }catch(e:Exception){runOnUiThread {status.text="Export failed: ${e.message}"}} }
  }
  private fun safe(s:String)=s.replace(Regex("[^a-zA-Z0-9._ -]"),"_").take(150).ifBlank {"Unnamed"}
