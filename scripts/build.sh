@@ -11,5 +11,14 @@ mkdir -p "$ROOT/dist/modelbridge/config"
 cp "$ROOT/manifest.json" "$ROOT/dist/modelbridge/"
 cp "$ROOT/config/config.json" "$ROOT/dist/modelbridge/config/"
 cp "$ROOT/build-android/libmodelbridge.so" "$ROOT/dist/modelbridge/"
-(cd "$ROOT/dist/modelbridge" && tar -cf "$ROOT/dist/modelbridge.levipack" manifest.json libmodelbridge.so config/)
+(cd "$ROOT/dist/modelbridge" && zip -q -r "$ROOT/dist/modelbridge.levipack" manifest.json libmodelbridge.so config/)
 echo "Created $ROOT/dist/modelbridge.levipack"
+
+python3 - "$ROOT/dist/modelbridge.levipack" <<'PY'
+import sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    names=set(z.namelist())
+    assert {"manifest.json","libmodelbridge.so"} <= names
+    assert z.testzip() is None
+    print("ZIP package validated")
+PY
