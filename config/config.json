@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "javaModels": {
+    "enabled": true
+  },
+  "rendering": {
+    "mode": "bootstrap",
+    "fallbackToVanilla": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "preload-native",
+  "name": "ModelBridge",
+  "author": "Alastor-Kaneki",
+  "version": "0.1.0",
+  "entry": "libmodelbridge.so",
+  "minecraft_versions": [],
+  "overwrite_files": [],
+  "overwrite_folders": [
+    "config"
+  ]
+}
